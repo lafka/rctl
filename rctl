@@ -1,0 +1,12 @@
+#!/bin/bash
+
+case "$1" in
+	commands)
+		sqlite3 ./rotel.rs232lib "SELECT name FROM Strings WHERE device = 22 OR device = 23"
+		;;
+
+	*)
+		cmd="$@"
+		echo -n $(sqlite3 ./rotel.rs232lib "SELECT string FROM Strings WHERE device = 22 AND name = '$cmd';")
+		;;
+esac
