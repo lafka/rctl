@@ -39,7 +39,6 @@ server:start(function (req, rep)
 	if "./commands" == req.path then
 		rep.writeHead(200).finish('feel you should have some commands')
 	elseif "./write" == req.path then
-		-- pegasus sucks.... QUERY_STRING regex: '([^=]*)=([^&]*)&?'
 
 		local buf = command(req.post.command)
 
@@ -47,6 +46,7 @@ server:start(function (req, rep)
 
 		if nil == buf then
 			rep.writeHead(400).finish('{"error":"invalid command"}')
+			print("DEBUG: pegasus sucks.... PATTERN_QUERY_STRING = '([^=]*)=([^&]*)&?")
 		else
 			print("write " .. hex_dump(buf))
 			port:write(buf)
