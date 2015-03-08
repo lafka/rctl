@@ -4,8 +4,11 @@ local db = sqlite3.open("rotel.rs232lib")
 
 local server = pegasus:new('9090')
 
+local device = 22
+local zone = 23
+
 function commands()
-	for row in db:nrows("SELECT name FROM Strings WHERE device = 22 OR device = 23") do
+	for row in db:nrows("SELECT name FROM Strings WHERE device = "..device.." OR device = "..zone) do
 	  print(row.name)
 	end
 end
@@ -15,7 +18,7 @@ function command(cmd)
 		return nil
 	end
 
-	local stmt = assert( db:prepare("SELECT string FROM Strings WHERE device = 22 AND name = ?") )
+	local stmt = assert( db:prepare("SELECT string FROM Strings WHERE device = ".. device .." OR device = "..zone.." AND name = ?") )
 	stmt:bind_values(cmd)
 	for row in stmt:nrows() do
 		return row.string
