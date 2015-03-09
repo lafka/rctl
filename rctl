@@ -1,12 +1,18 @@
 #!/bin/bash
 
+# device id 22 is the Rotel RSP-1068.
+device=22
+
 case "$1" in
 	commands)
-		sqlite3 ./rotel.rs232lib "SELECT name FROM Strings WHERE device = 22 OR device = 23"
+		sqlite3 ./rotel.rs232lib "SELECT name FROM Strings WHERE device = $device OR device = 23"
 		;;
+    devices)
+        sqlite3 ./rotel.rs232lib "SELECT model,id FROM Devices" | sed 's/\|/\t\t/'
+        ;;
 
 	*)
 		cmd="$@"
-		echo -n $(sqlite3 ./rotel.rs232lib "SELECT string FROM Strings WHERE device = 22 AND name = '$cmd';")
+		echo -n $(sqlite3 ./rotel.rs232lib "SELECT string FROM Strings WHERE device = $device AND name = '$cmd';")
 		;;
 esac

@@ -4,8 +4,13 @@ local db = sqlite3.open("rotel.rs232lib")
 
 local server = pegasus:new('9090')
 
+local device = 22
+local zone = 23
+
 function commands()
-	for row in db:nrows("SELECT name FROM Strings WHERE device = 22 OR device = 23") do
+	local stmt = assert( db:prepare("SELECT name FROM Strings WHERE device = ? OR device = ?") )
+	stmt:bind_values(device, zone)
+	for row in stmt:nrows() do
 	  print(row.name)
 	end
 end
@@ -15,8 +20,8 @@ function command(cmd)
 		return nil
 	end
 
-	local stmt = assert( db:prepare("SELECT string FROM Strings WHERE device = 22 AND name = ?") )
-	stmt:bind_values(cmd)
+	local stmt = assert( db:prepare("SELECT string FROM Strings WHERE name = ? AND (device = ? OR device = ?)") )
+	stmt:bind_values(cmd, device, zone)
 	for row in stmt:nrows() do
 		return row.string
 	end
@@ -37,16 +42,16 @@ local port = assert( io.open(tty, "w") )
 server:start(function (req, rep)
 	print("path: " .. req.path)
 	if "./commands" == req.path then
+		commands()
 		rep.writeHead(200).finish('feel you should have some commands')
 	elseif "./write" == req.path then
-		-- pegasus sucks.... QUERY_STRING regex: '([^=]*)=([^&]*)&?'
-
-		local buf = command(req.post.command)
 
 		print(req.post.command)
+		local buf = command(req.post.command)
 
 		if nil == buf then
 			rep.writeHead(400).finish('{"error":"invalid command"}')
+			print("DEBUG: pegasus sucks.... PATTERN_QUERY_STRING = '([^=]*)=([^&]*)&?")
 		else
 			print("write " .. hex_dump(buf))
 			port:write(buf)
